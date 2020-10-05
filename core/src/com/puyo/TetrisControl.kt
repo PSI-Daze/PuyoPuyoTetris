@@ -8,8 +8,6 @@ import kotlin.random.Random
 
 class TetrisControl() {
 
-    val CELL_SIZE: Int = 30
-
     var textures: com.badlogic.gdx.utils.Array<Texture> = com.badlogic.gdx.utils.Array(7)
     var nextTetrominos: com.badlogic.gdx.utils.Array<Tetromino> = com.badlogic.gdx.utils.Array(5)
     lateinit var currentTetromino: Tetromino
@@ -17,17 +15,17 @@ class TetrisControl() {
     var dropTetrominoTimer: Float = 0f
     var downKeyHeldTimer: Float = 0f
 
-    var rows: Int = 25
     var columns: Int = 10
-    var cells: Array<com.badlogic.gdx.utils.Array<TetrisBlock>> = Array(rows) {com.badlogic.gdx.utils.Array<TetrisBlock>(columns)}
+    var rows: Int = 25
+    var cells: Array<com.badlogic.gdx.utils.Array<TetrisBlock>> = Array(columns) {com.badlogic.gdx.utils.Array<TetrisBlock>(rows)}
 
     init {
         textures.addAll(Texture("blue_tile.png"), Texture("dark_blue_tile.png"), Texture("green_tile.png"),
                 Texture("orange_tile.png"), Texture("purple_tile.png"), Texture("red_tile.png"), Texture("yellow_tile.png"))
 
-        for (column in cells) {
-            for (i in 0 until columns) {
-                column.add(null)
+        for (row in cells) {
+            for (i in 0 until rows) {
+                row.add(null)
             }
         }
         createNextTetrominos()
@@ -101,7 +99,7 @@ class TetrisControl() {
         for (i in block.shape.indices) {
             for (cell in block.shape[i]) {
                 if (cell != null) {
-                    cells[cell.y][cell.x] = cell
+                    cells[cell.column][cell.row] = cell
                 }
             }
         }
@@ -113,9 +111,9 @@ class TetrisControl() {
         if (block.isFalling && !tetrominoLanded(block)) {
             for (i in block.shape.size - 1 downTo 0) {
                 for (j in block.shape[i].size - 1 downTo 0) {
-                    if (block.shape[i][j] != null) {
-                        cells[block.shape[i][j].y + 1][block.shape[i][j].x] = block.shape[i][j]
-                        cells[block.shape[i][j].y][block.shape[i][j].x] = null
+                    if (block.shape[j][i] != null) {
+                        cells[block.shape[j][i].column][block.shape[j][i].row + 1] = block.shape[j][i]
+                        cells[block.shape[j][i].column][block.shape[j][i].row] = null
                     }
                 }
 
@@ -128,9 +126,9 @@ class TetrisControl() {
         for (i in block.shape.indices) {
             for (j in 0 until block.shape[i].size) {
                 if (block.shape[i][j] != null) {
-                    if (block.shape[i][j].y < rows - 1) {
-                        if (cells[block.shape[i][j].y + 1][block.shape[i][j].x] != null &&
-                                block.shape[i + 1][j] == null) {
+                    if (block.shape[i][j].row < rows - 1) {
+                        if (cells[block.shape[i][j].column][block.shape[i][j].row + 1] != null &&
+                                block.shape[i][j + 1] == null) {
                             return true
                         }
                     } else {
@@ -144,11 +142,11 @@ class TetrisControl() {
 
     fun moveRight(block: Tetromino) {
         if (block.isFalling && !rightIsBlocked(block)) {
-            for (j in block.shape[0].size - 1 downTo 0) { // reverse order is necessary
-                for (i in block.shape.size - 1 downTo 0) {
+            for (i in block.shape[0].size - 1 downTo 0) { // reverse order is necessary
+                for (j in block.shape.size - 1 downTo 0) {
                     if(block.shape[i][j] != null) {
-                        cells[block.shape[i][j].y][block.shape[i][j].x + 1] = block.shape[i][j]
-                        cells[block.shape[i][j].y][block.shape[i][j].x] = null
+                        cells[block.shape[i][j].column + 1][block.shape[i][j].row] = block.shape[i][j]
+                        cells[block.shape[i][j].column][block.shape[i][j].row] = null
                     }
                 }
             }
@@ -160,9 +158,9 @@ class TetrisControl() {
         for (i in block.shape.indices) {
             for (j in 0 until block.shape[i].size) {
                 if (block.shape[i][j] != null) {
-                    if (block.shape[i][j].x != columns - 1) {
-                        if (cells[block.shape[i][j].y][block.shape[i][j].x + 1] != null &&
-                                cells[block.shape[i][j].y][block.shape[i][j].x + 1] != block.shape[i][j + 1]) {
+                    if (block.shape[i][j].column < columns - 1) {
+                        if (cells[block.shape[i][j].column + 1][block.shape[i][j].row] != null &&
+                                cells[block.shape[i][j].column + 1][block.shape[i][j].row] != block.shape[i + 1][j]) {
                             return true
                         }
                     } else return true
@@ -174,11 +172,11 @@ class TetrisControl() {
 
     fun moveLeft(block: Tetromino) {
         if (block.isFalling && !leftIsBlocked(block)) {
-            for (j in 0 until block.shape[0].size) {
-                for (i in 0 until block.shape.size) {
+            for (i in 0 until block.shape[0].size) {
+                for (j in 0 until block.shape.size) {
                     if(block.shape[i][j] != null) {
-                        cells[block.shape[i][j].y][block.shape[i][j].x - 1] = block.shape[i][j]
-                        cells[block.shape[i][j].y][block.shape[i][j].x] = null
+                        cells[block.shape[i][j].column - 1][block.shape[i][j].row] = block.shape[i][j]
+                        cells[block.shape[i][j].column][block.shape[i][j].row] = null
                     }
                 }
             }
@@ -190,9 +188,9 @@ class TetrisControl() {
         for (i in block.shape.indices) {
             for (j in 0 until block.shape[i].size) {
                 if (block.shape[i][j] != null) {
-                    if (block.shape[i][j].x != 0) {
-                        if (cells[block.shape[i][j].y][block.shape[i][j].x - 1] != null &&
-                                cells[block.shape[i][j].y][block.shape[i][j].x - 1] != block.shape[i][j - 1]) {
+                    if (block.shape[i][j].column > 0) {
+                        if (cells[block.shape[i][j].column - 1][block.shape[i][j].row] != null &&
+                                cells[block.shape[i][j].column - 1][block.shape[i][j].row] != block.shape[i - 1][j]) {
                             return true
                         }
                     } else return true
@@ -203,27 +201,27 @@ class TetrisControl() {
     }
 
     fun turnLeft(block: Tetromino){ // might change for I
-        if (leftTurnPossible(block)) {
+        if (block.type != 'O') {
             for (i in block.shape.indices) {
                 for (j in 0 until block.shape[i].size) {
                     if (block.shape[i][j] != null) {
-                        // matrix formula, just for clarity sake I keep unnecessary steps
-                        cells[block.shape[i][j].y][block.shape[i][j].x] = null
+                        cells[block.shape[i][j].column][block.shape[i][j].row] = null
                     }
                 }
             }
             block.turnLeft()
+            if (wrongState(block)) block.turnRight()
             for (i in block.shape.indices) {
                 for (j in 0 until block.shape[i].size) {
                     if (block.shape[i][j] != null) {
-                        cells[block.shape[i][j].y][block.shape[i][j].x] = block.shape[i][j]
+                        cells[block.shape[i][j].column][block.shape[i][j].row] = block.shape[i][j]
                     }
                 }
             }
         }
     }
 
-    fun leftTurnPossible(block: Tetromino): Boolean { // I-BLOCK ROTATION STILL NEEDS UPDATED COORDINATES
+    /*fun leftTurnPossible(block: Tetromino): Boolean { // I-BLOCK ROTATION STILL NEEDS UPDATED COORDINATES
         if (block.type != 'O') {
             for (i in block.shape.indices) {
                 for (j in 0 until block.shape[i].size) {
@@ -252,30 +250,31 @@ class TetrisControl() {
             }
         } else return false
         return true
-    }
+    }*/
 
     fun turnRight(block: Tetromino){ // not compatible with I
-        if (rightTurnPossible(block)) {
+        if (block.type != 'O') {
             for (i in block.shape.indices) {
                 for (j in 0 until block.shape[i].size) {
                     if (block.shape[i][j] != null) {
                         // matrix formula, just for clarity sake I keep unnecessary steps
-                        cells[block.shape[i][j].y][block.shape[i][j].x] = null
+                        cells[block.shape[i][j].column][block.shape[i][j].row] = null
                     }
                 }
             }
             block.turnRight()
+            if (wrongState(block)) block.turnLeft()
             for (i in block.shape.indices) {
                 for (j in 0 until block.shape[i].size) {
                     if (block.shape[i][j] != null) {
-                        cells[block.shape[i][j].y][block.shape[i][j].x] = block.shape[i][j]
+                        cells[block.shape[i][j].column][block.shape[i][j].row] = block.shape[i][j]
                     }
                 }
             }
         }
     }
 
-    fun rightTurnPossible(block: Tetromino): Boolean { // might need to change I-Block rotation
+    /* fun rightTurnPossible(block: Tetromino): Boolean { // might need to change I-Block rotation
         if (block.type != 'O') {
             for (i in block.shape.indices) {
                 for (j in 0 until block.shape[i].size) {
@@ -304,19 +303,35 @@ class TetrisControl() {
             }
         } else return false
         return true
+    }*/
+
+    fun wrongState(block: Tetromino): Boolean {
+        for (i in block.shape.indices) {
+            for (j in 0 until block.shape[i].size) {
+                if (block.shape[i][j] != null) {
+                    if (block.shape[i][j].column < 0 || block.shape[i][j].column >= columns ||
+                            block.shape[i][j].row < 0 || block.shape[i][j].row >= rows) {
+                        return true
+                    } else if (cells[block.shape[i][j].column][block.shape[i][j].row] != null) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
     }
 
     fun updateRows() {
         var fullRows: com.badlogic.gdx.utils.Array<Int> = getFullRows()
         if (fullRows.size > 0) {
             for (row in fullRows) {
-                for (i in row downTo 1) {
-                    for (j in 0 until cells[i].size) {
-                        cells[i][j] = cells[i - 1][j]
+                for (j in row downTo 1) {
+                    for (i in cells.size - 1 downTo 0) {
+                        cells[i][j] = cells[i][j - 1]
                     }
                 }
-                for (i in 0 until cells[0].size) {
-                    cells[0][i] = null
+                for (i in 0 until cells.size) {
+                    cells[i][0] = null
                 }
             }
         }
@@ -326,9 +341,9 @@ class TetrisControl() {
         var rowIsFull: Boolean = true
         // LibGDX Array because apparently ArrayList takes memory space
         var fullRows: com.badlogic.gdx.utils.Array<Int> = com.badlogic.gdx.utils.Array()
-        for (i in cells.indices) {
-            for (j in 0 until cells[i].size) {
-                if (cells[i][j] == null) rowIsFull = false
+        for (i in 0 until cells[0].size) {
+            for (j in 0 until cells.size) {
+                if (cells[j][i] == null) rowIsFull = false
             }
             if (rowIsFull) {
                 fullRows.add(i)
@@ -338,8 +353,8 @@ class TetrisControl() {
     }
 
     fun isFull(): Boolean {
-        for (i in 2 until cells[1].size - 2) { // 1 instead of 0 because the first row is invisible
-            if (cells[1][i] != null) {
+        for (i in 2 until cells.size - 2) { // 1 instead of 0 because the first row is invisible
+            if (cells[i][1] != null) {
                 return true
             }
         }

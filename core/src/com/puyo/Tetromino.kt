@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Rectangle
 import kotlin.math.roundToInt
 
 
-class Tetromino(var x: Int, var y: Int, var type: Char, var texture: Texture):
+class Tetromino(var column: Int, var row: Int, var type: Char, var texture: Texture):
         Block() {
 
     // Array is two dimensional [row][column]
@@ -15,8 +15,8 @@ class Tetromino(var x: Int, var y: Int, var type: Char, var texture: Texture):
     var isFalling: Boolean
     var width: Float = 0f
     var height: Float = 0f
-    var rows: Int = 0
     var columns: Int = 0
+    var rows: Int = 0
     var pivotX: Float = 3f
     var pivotY: Float = 3f
 
@@ -35,8 +35,8 @@ class Tetromino(var x: Int, var y: Int, var type: Char, var texture: Texture):
             'Z' -> createZ()
         }
         isFalling = true
-        rows = blockRows()
         columns = blockColumns()
+        rows = blockRows()
         width = columns * 30f
         height = rows * 30f
     }
@@ -45,13 +45,13 @@ class Tetromino(var x: Int, var y: Int, var type: Char, var texture: Texture):
         for (i in shape.indices) {
             for (brick in shape[i]) {
                 if (brick != null) {
-                    brick.x += x
-                    brick.y += y
+                    brick.column += x
+                    brick.row += y
                 }
             }
         }
-        this.x += x
-        this.y += y
+        this.column += x
+        this.row += y
     }
 
     fun turnLeft() {
@@ -68,14 +68,14 @@ class Tetromino(var x: Int, var y: Int, var type: Char, var texture: Texture):
                     var newI = (diffI * 0) + (diffJ * -1)
                     var newJ = (diffI * 1) + (diffJ * 0)
 
-                    var diffX: Int = shape[i][j].x - x
-                    var diffY: Int = shape[i][j].y - y
+                    var diffX: Int = shape[i][j].column - column
+                    var diffY: Int = shape[i][j].row - row
                     var newX: Int = (diffX * 0) + (diffY * -1)
                     var newY: Int = (diffX * 1) + (diffY * 0)
 
-                    newShape[(pivotX + newI).toInt()][(pivotY + newJ).toInt()] = shape[i][j]
-                    // I do not know why I have to subtract for coordinates don't ask me it works
-                    newShape[(pivotX + newI).toInt()][(pivotY + newJ).toInt()].setPosition(x - newX, y - newY)
+                    newShape[(pivotX - newI).toInt()][(pivotY - newJ).toInt()] = shape[i][j]
+                    newShape[(pivotX - newI).toInt()][(pivotY - newJ).toInt()]
+                            .setPosition(column - newX, row - newY)
                 }
             }
         }
@@ -96,14 +96,15 @@ class Tetromino(var x: Int, var y: Int, var type: Char, var texture: Texture):
                     var newI = (diffI * 0) + (diffJ * -1)
                     var newJ = (diffI * 1) + (diffJ * 0)
 
-                    var diffX: Int = shape[i][j].x - x
-                    var diffY: Int = shape[i][j].y - y
+                    var diffX: Int = shape[i][j].column - column
+                    var diffY: Int = shape[i][j].row - row
                     var newX: Int = (diffX * 0) + (diffY * -1)
                     var newY: Int = (diffX * 1) + (diffY * 0)
 
-                    newShape[(pivotX - newI).toInt()][(pivotY - newJ).toInt()] = shape[i][j]
+                    newShape[(pivotX + newI).toInt()][(pivotY + newJ).toInt()] = shape[i][j]
                     // I do not know why I have to add for coordinates don't ask me it works
-                    newShape[(pivotX - newI).toInt()][(pivotY - newJ).toInt()].setPosition(x + newX, y + newY)
+                    newShape[(pivotX + newI).toInt()][(pivotY + newJ).toInt()]
+                            .setPosition(column + newX, row + newY)
                 }
             }
         }
@@ -116,8 +117,8 @@ class Tetromino(var x: Int, var y: Int, var type: Char, var texture: Texture):
         for (i in shape.indices) {
             for (j in 0 until shape[i].size) {
                 if (shape[i][j] != null) {
-                    if (!indices.contains(i)) {
-                        indices[i] = i
+                    if (!indices.contains(j)) {
+                        indices[j] = j
                         rows++
                     }
                 }
@@ -132,8 +133,8 @@ class Tetromino(var x: Int, var y: Int, var type: Char, var texture: Texture):
         for (i in shape.indices) {
             for (j in 0 until shape[i].size) {
                 if (shape[i][j] != null) {
-                    if (!indices.contains(j)) {
-                        indices[j] = j
+                    if (!indices.contains(i)) {
+                        indices[i] = i
                         columns++
                     }
                 }
@@ -145,16 +146,6 @@ class Tetromino(var x: Int, var y: Int, var type: Char, var texture: Texture):
     fun firstRow(): Int {
         for (i in shape.indices) {
             for (j in 0 until shape[i].size) {
-                if (shape[i][j] != null) {
-                    return i
-                }
-            }
-        }
-        return -1
-    }
-    fun firstColumn(): Int {
-        for (i in shape.indices) {
-            for (j in 0 until shape[i].size) {
                 if (shape[j][i] != null) {
                     return i
                 }
@@ -163,54 +154,65 @@ class Tetromino(var x: Int, var y: Int, var type: Char, var texture: Texture):
         return -1
     }
 
+    fun firstColumn(): Int {
+        for (i in shape.indices) {
+            for (j in 0 until shape[i].size) {
+                if (shape[i][j] != null) {
+                    return i
+                }
+            }
+        }
+        return -1
+    }
+
     fun createT() {
-        shape[3][2] = TetrisBlock(x - 1, y, texture)
-        shape[3][3] = TetrisBlock(x, y, texture) // main brick for T-Block
-        shape[3][4] = TetrisBlock(x + 1, y, texture)
-        shape[2][3] = TetrisBlock(x, y - 1, texture)
+        shape[2][3] = TetrisBlock(column - 1, row, texture)
+        shape[3][3] = TetrisBlock(column, row, texture) // main brick for T-Block
+        shape[4][3] = TetrisBlock(column + 1, row, texture)
+        shape[3][2] = TetrisBlock(column, row - 1, texture)
     }
 
     fun createO() {
-        shape[2][2] = TetrisBlock(x - 1, y - 1, texture)
-        shape[2][3] = TetrisBlock(x, y - 1, texture)
-        shape[3][2] = TetrisBlock(x - 1, y, texture)
-        shape[3][3] = TetrisBlock(x, y, texture) // main brick for O-Block
+        shape[2][2] = TetrisBlock(column - 1, row - 1, texture)
+        shape[3][2] = TetrisBlock(column, row - 1, texture)
+        shape[2][3] = TetrisBlock(column - 1, row, texture)
+        shape[3][3] = TetrisBlock(column, row, texture) // main brick for O-Block
     }
 
     fun createI() {
-        shape[3][2] = TetrisBlock(x - 1, y, texture)
-        shape[3][3] = TetrisBlock(x, y, texture) // main brick for I-Block (doesn't matter tho)
-        shape[3][4] = TetrisBlock(x + 1, y, texture)
-        shape[3][5] = TetrisBlock(x + 2, y, texture)
-        //pivotX = 3.5f
-        //pivotY = 3.5f
+        shape[2][3] = TetrisBlock(column - 1, row, texture)
+        shape[3][3] = TetrisBlock(column, row, texture) // main brick for I-Block (doesn't matter tho)
+        shape[4][3] = TetrisBlock(column + 1, row, texture)
+        shape[5][3] = TetrisBlock(column + 2, row, texture)
+        pivotX = 3.5f
+        pivotY = 3.5f
     }
 
     fun createJ() {
-        shape[3][2] = TetrisBlock(x - 1, y, texture) // main brick for J-Block
-        shape[3][3] = TetrisBlock(x, y, texture)
-        shape[3][4] = TetrisBlock(x + 1, y, texture)
-        shape[2][2] = TetrisBlock(x - 1, y - 1, texture)
+        shape[2][3] = TetrisBlock(column - 1, row, texture) // main brick for J-Block
+        shape[3][3] = TetrisBlock(column, row, texture)
+        shape[4][3] = TetrisBlock(column + 1, row, texture)
+        shape[2][2] = TetrisBlock(column - 1, row - 1, texture)
     }
 
     fun createL() {
-        shape[3][4] = TetrisBlock(x + 1, y, texture) // main brick for L-Block
-        shape[3][3] = TetrisBlock(x, y, texture)
-        shape[3][2] = TetrisBlock(x - 1, y, texture)
-        shape[2][4] = TetrisBlock(x + 1, y - 1, texture)
+        shape[4][3] = TetrisBlock(column + 1, row, texture) // main brick for L-Block
+        shape[3][3] = TetrisBlock(column, row, texture)
+        shape[2][3] = TetrisBlock(column - 1, row, texture)
+        shape[4][2] = TetrisBlock(column + 1, row - 1, texture)
     }
 
     fun createS() {
-        shape[2][3] = TetrisBlock(x, y - 1, texture)
-        shape[2][4] = TetrisBlock(x + 1, y - 1, texture)
-        shape[3][2] = TetrisBlock(x - 1, y, texture)
-        shape[3][3] = TetrisBlock(x, y, texture) // main brick for S-Block
+        shape[3][2] = TetrisBlock(column, row - 1, texture)
+        shape[4][2] = TetrisBlock(column + 1, row - 1, texture)
+        shape[2][3] = TetrisBlock(column - 1, row, texture)
+        shape[3][3] = TetrisBlock(column, row, texture) // main brick for S-Block
     }
 
     fun createZ() {
-        shape[2][3] = TetrisBlock(x, y - 1, texture)
-        shape[2][2] = TetrisBlock(x - 1, y - 1, texture)
-        shape[3][3] = TetrisBlock(x, y, texture) // main brick for Z-Block
-        shape[3][4] = TetrisBlock(x + 1, y, texture)
+        shape[3][2] = TetrisBlock(column, row - 1, texture)
+        shape[2][2] = TetrisBlock(column - 1, row - 1, texture)
+        shape[3][3] = TetrisBlock(column, row, texture) // main brick for Z-Block
+        shape[4][3] = TetrisBlock(column + 1, row, texture)
     }
 }

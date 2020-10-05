@@ -50,10 +50,10 @@ class TetrisScreen(val game: PuyoPuyoTetris) : Screen {
         game.batch.begin()
         game.font.draw(game.batch, "NEXT", NEXT_BLOCK_FIELD_X + (CELL_SIZE * 0.2f), GRID_TOP_Y - (CELL_SIZE * 0.2f))
 
-        for (i in 1 until control.cells.size) { // invisible rows are nice
-            for (j in 0 until control.cells[i].size) {
+        for (i in 0 until control.cells.size) { // invisible rows are nice
+            for (j in 1 until control.cells[i].size) {
                 if (control.cells[i][j] != null) {
-                    game.batch.draw(control.cells[i][j].texture, j.toFloat() * CELL_SIZE + GRID_LEFT_X, GRID_TOP_Y - (i.toFloat() * CELL_SIZE),
+                    game.batch.draw(control.cells[i][j].texture, i.toFloat() * CELL_SIZE + GRID_LEFT_X, GRID_TOP_Y - (j.toFloat() * CELL_SIZE),
                             CELL_SIZE.toFloat(), CELL_SIZE.toFloat())
                 }
             }
@@ -64,8 +64,8 @@ class TetrisScreen(val game: PuyoPuyoTetris) : Screen {
             for (j in 0 until nextBlock.shape[i].size) {
                 if (nextBlock.shape[i][j] != null) {
                     game.batch.draw(nextBlock.shape[i][j].texture,
-                            NEXT_BLOCK_FIELD_X + ((CELL_SIZE * 4.5f - (nextBlock.width * 0.9f)) / 2) + ((j - nextBlock.firstColumn()) * CELL_SIZE * 0.9f),
-                            GRID_TOP_Y - (CELL_SIZE * 0.9f) - ((CELL_SIZE * 4f - (nextBlock.height * 0.9f)) / 2) - ((i - nextBlock.firstRow()) * CELL_SIZE * 0.9f),
+                            NEXT_BLOCK_FIELD_X + ((CELL_SIZE * 4.5f - (nextBlock.width * 0.9f)) / 2) + ((i - nextBlock.firstColumn()) * CELL_SIZE * 0.9f),
+                            GRID_TOP_Y - (CELL_SIZE * 0.9f) - ((CELL_SIZE * 4f - (nextBlock.height * 0.9f)) / 2) - ((j - nextBlock.firstRow()) * CELL_SIZE * 0.9f),
                             CELL_SIZE * 0.9f, CELL_SIZE * 0.9f)
                 }
             }
@@ -77,8 +77,8 @@ class TetrisScreen(val game: PuyoPuyoTetris) : Screen {
                 for (j in 0 until nextBlock.shape[i].size) {
                     if (nextBlock.shape[i][j] != null) {
                         game.batch.draw(nextBlock.shape[i][j].texture,
-                                NEXT_BLOCK_FIELD_X + ((CELL_SIZE * 3.5f - (nextBlock.width * 0.7f)) / 2) + ((j - nextBlock.firstColumn()) * CELL_SIZE * 0.7f),
-                                NEXT_BLOCK_FIELD2_TOP_Y - (((field * 3) + 0.7f) * CELL_SIZE) - ((CELL_SIZE * 2.5f - (nextBlock.height * 0.7f)) / 2) - ((i - nextBlock.firstRow()) * CELL_SIZE * 0.7f),
+                                NEXT_BLOCK_FIELD_X + ((CELL_SIZE * 3.5f - (nextBlock.width * 0.7f)) / 2) + ((i - nextBlock.firstColumn()) * CELL_SIZE * 0.7f),
+                                NEXT_BLOCK_FIELD2_TOP_Y - (((field * 3) + 0.7f) * CELL_SIZE) - ((CELL_SIZE * 2.5f - (nextBlock.height * 0.7f)) / 2) - ((j - nextBlock.firstRow()) * CELL_SIZE * 0.7f),
                                 CELL_SIZE * 0.7f, CELL_SIZE * 0.7f)
                     }
                 }
