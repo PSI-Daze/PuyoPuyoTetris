@@ -68,14 +68,18 @@ class Tetromino(var column: Int, var row: Int, var type: Char, var texture: Text
                     var newI = (diffI * 0) + (diffJ * -1)
                     var newJ = (diffI * 1) + (diffJ * 0)
 
-                    var diffX: Int = shape[i][j].column - column
-                    var diffY: Int = shape[i][j].row - row
-                    var newX: Int = (diffX * 0) + (diffY * -1)
-                    var newY: Int = (diffX * 1) + (diffY * 0)
+                    var fraction: Float = pivotX.roundToInt() - pivotX // is 0.5 if pivot is between blocks, otherwise 0
+                    var diffX: Float = shape[i][j].column - column.toFloat()
+                    var diffY: Float = shape[i][j].row - row.toFloat()
+                    diffX += fraction
+                    diffY += fraction
+                    var newX: Float = (diffX * 0) + (diffY * -1)
+                    var newY: Float = (diffX * 1) + (diffY * 0)
 
                     newShape[(pivotX - newI).toInt()][(pivotY - newJ).toInt()] = shape[i][j]
                     newShape[(pivotX - newI).toInt()][(pivotY - newJ).toInt()]
-                            .setPosition(column - newX, row - newY)
+                            .setPosition((column + fraction - newX).toInt(), (row + fraction - newY).toInt())
+                    // I really have no idea why I spinning works like this
                 }
             }
         }
@@ -96,15 +100,24 @@ class Tetromino(var column: Int, var row: Int, var type: Char, var texture: Text
                     var newI = (diffI * 0) + (diffJ * -1)
                     var newJ = (diffI * 1) + (diffJ * 0)
 
-                    var diffX: Int = shape[i][j].column - column
-                    var diffY: Int = shape[i][j].row - row
-                    var newX: Int = (diffX * 0) + (diffY * -1)
-                    var newY: Int = (diffX * 1) + (diffY * 0)
+                    var fraction: Float = pivotX.roundToInt() - pivotX // is 0.5 if pivot is between blocks, otherwise 0
+                    var diffX: Float = shape[i][j].column - column.toFloat()
+                    var diffY: Float = shape[i][j].row - row.toFloat()
+                    diffX -= fraction
+                    diffY -= fraction
+                    var newX: Float = (diffX * 0) + (diffY * -1)
+                    var newY: Float = (diffX * 1) + (diffY * 0)
 
+                    println(shape[i][j].column)
+                    println(shape[i][j].row)
                     newShape[(pivotX + newI).toInt()][(pivotY + newJ).toInt()] = shape[i][j]
                     // I do not know why I have to add for coordinates don't ask me it works
                     newShape[(pivotX + newI).toInt()][(pivotY + newJ).toInt()]
-                            .setPosition(column + newX, row + newY)
+                            .setPosition((column - fraction + newX).toInt(), (row - fraction + newY).toInt())
+                    // I really have no idea why I spinning works like this
+                    println((column - fraction + newX).toInt())
+                    println((row - fraction + newY).toInt())
+                    println()
                 }
             }
         }
