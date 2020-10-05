@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Rectangle
 import kotlin.math.roundToInt
 
 
-class Tetromino(var x: Int, var y: Int, var size: Int, var type: Char, var texture: Texture):
+class Tetromino(var x: Int, var y: Int, var type: Char, var texture: Texture):
         Block() {
 
     // Array is two dimensional [row][column]

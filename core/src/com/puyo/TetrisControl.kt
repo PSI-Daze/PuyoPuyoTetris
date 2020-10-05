@@ -85,8 +85,7 @@ class TetrisControl() {
     fun spawnTetromino(){
         currentTetromino = nextTetrominos.pop()
         var tetrominos: CharArray = charArrayOf('T', 'O', 'I', 'J', 'L', 'S', 'Z')
-        nextTetrominos.insert(0, Tetromino(4, 1, CELL_SIZE,
-                tetrominos[Random.nextInt(6)], textures[Random.nextInt(6)]))
+        nextTetrominos.insert(0, Tetromino(4, 1, tetrominos[Random.nextInt(6)], textures[Random.nextInt(6)]))
         addTetromino(currentTetromino)
     }
 
@@ -94,7 +93,7 @@ class TetrisControl() {
         nextTetrominos.addAll(null, null, null, null, null)
         var tetrominos: CharArray = charArrayOf('T', 'O', 'I', 'J', 'L', 'S', 'Z')
         for (i in 0 until nextTetrominos.size) {
-            nextTetrominos[i] = Tetromino(4, 1, CELL_SIZE, tetrominos[Random.nextInt(6)], textures[Random.nextInt(6)])
+            nextTetrominos[i] = Tetromino(4, 1, tetrominos[Random.nextInt(6)], textures[Random.nextInt(6)])
         }
     }
 
@@ -115,7 +114,7 @@ class TetrisControl() {
             for (i in block.shape.size - 1 downTo 0) {
                 for (j in block.shape[i].size - 1 downTo 0) {
                     if (block.shape[i][j] != null) {
-                        cells[block.shape[i][j].y + 1][block.shape[i][j].x.toInt()] = block.shape[i][j]
+                        cells[block.shape[i][j].y + 1][block.shape[i][j].x] = block.shape[i][j]
                         cells[block.shape[i][j].y][block.shape[i][j].x] = null
                     }
                 }
