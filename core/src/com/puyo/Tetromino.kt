@@ -12,7 +12,9 @@ class Tetromino(var column: Int, var row: Int, var type: Char, var texture: Text
 
     // Array is two dimensional [row][column]
     var shape: Array<com.badlogic.gdx.utils.Array<TetrisBlock>>
+    var rotationState: Char = '0'
     var isFalling: Boolean
+
     var width: Float = 0f
     var height: Float = 0f
     var columns: Int = 0
@@ -68,7 +70,7 @@ class Tetromino(var column: Int, var row: Int, var type: Char, var texture: Text
                     var newI = (diffI * 0) + (diffJ * -1)
                     var newJ = (diffI * 1) + (diffJ * 0)
 
-                    var fraction: Float = pivotX.roundToInt() - pivotX // is 0.5 if pivot is between blocks, otherwise 0
+                    var fraction: Float = pivotX.roundToInt() - pivotX // is 0.5 if pivot is between blocks, otherwise 0 (for I-spinning)
                     var diffX: Float = shape[i][j].column - column.toFloat()
                     var diffY: Float = shape[i][j].row - row.toFloat()
                     diffX += fraction
@@ -84,6 +86,7 @@ class Tetromino(var column: Int, var row: Int, var type: Char, var texture: Text
             }
         }
         shape = newShape
+        updateState('L')
     }
 
     fun turnRight() {
@@ -108,20 +111,34 @@ class Tetromino(var column: Int, var row: Int, var type: Char, var texture: Text
                     var newX: Float = (diffX * 0) + (diffY * -1)
                     var newY: Float = (diffX * 1) + (diffY * 0)
 
-                    println(shape[i][j].column)
-                    println(shape[i][j].row)
                     newShape[(pivotX + newI).toInt()][(pivotY + newJ).toInt()] = shape[i][j]
                     // I do not know why I have to add for coordinates don't ask me it works
                     newShape[(pivotX + newI).toInt()][(pivotY + newJ).toInt()]
                             .setPosition((column - fraction + newX).toInt(), (row - fraction + newY).toInt())
                     // I really have no idea why I spinning works like this
-                    println((column - fraction + newX).toInt())
-                    println((row - fraction + newY).toInt())
-                    println()
                 }
             }
         }
         shape = newShape
+        updateState('R')
+    }
+
+    fun updateState(rotation: Char) {
+        if (rotation == 'L') {
+            when(rotationState) {
+                '0' -> rotationState = 'L'
+                'L' -> rotationState = '2'
+                'R' -> rotationState = '0'
+                '2' -> rotationState = 'R'
+            }
+        } else if (rotation == 'R') {
+            when(rotationState) {
+                '0' -> rotationState = 'R'
+                'L' -> rotationState = '0'
+                'R' -> rotationState = '2'
+                '2' -> rotationState = 'L'
+            }
+        }
     }
 
     fun blockRows(): Int {

@@ -12,6 +12,21 @@ class TetrisControl() {
     var nextTetrominos: com.badlogic.gdx.utils.Array<Tetromino> = com.badlogic.gdx.utils.Array(5)
     lateinit var currentTetromino: Tetromino
 
+    // y-offsets have to be reversed from srs system
+    var offsets02: Array<Pair<Int, Int>> = arrayOf(Pair(0, 0), Pair(0, 0), Pair(0, 0), Pair(0, 0))
+    var offsetsL: Array<Pair<Int, Int>> = arrayOf(Pair(-1, 0), Pair(-1, 1), Pair(0, -2), Pair(-1, -2))
+    var offsetsR: Array<Pair<Int, Int>> = arrayOf(Pair(1, 0), Pair(1, 1), Pair(0, -2), Pair(-1, -2))
+
+    var offsetsMap: MutableMap<Char, Array<Pair<Int, Int>>> = mutableMapOf('0' to offsets02, 'L' to offsetsL, 'R' to offsetsR, '2' to offsets02)
+
+    // I has own offsets (what a troublesome tetromino)
+    var iOffsets02: Array<Pair<Int, Int>> = arrayOf(Pair(0, 0), Pair(0, 0), Pair(0, 0), Pair(0, 0))
+    var iOffsetsL: Array<Pair<Int, Int>> = arrayOf(Pair(-1, 0), Pair(-1, 1), Pair(0, -2), Pair(-1, -2))
+    var iOffsetsR: Array<Pair<Int, Int>> = arrayOf(Pair(1, 0), Pair(1, 1), Pair(0, -2), Pair(-1, -2))
+
+    var iOffsetsMap: MutableMap<Char, Array<Pair<Int, Int>>> = mutableMapOf('0' to iOffsets02, 'L' to iOffsetsL, 'R' to iOffsetsR, '2' to iOffsets02)
+
+
     var dropTetrominoTimer: Float = 0f
     var downKeyHeldTimer: Float = 0f
 
@@ -210,7 +225,10 @@ class TetrisControl() {
                 }
             }
             block.turnLeft()
-            if (wrongState(block)) block.turnRight()
+            if (wrongState(block)) {
+                block.turnRight()
+                wallKickDef(block, 'L')
+            }
             for (i in block.shape.indices) {
                 for (j in 0 until block.shape[i].size) {
                     if (block.shape[i][j] != null) {
@@ -219,6 +237,32 @@ class TetrisControl() {
                 }
             }
         }
+    }
+
+    fun wallKickDef(block: Tetromino, rotation: Char) {
+        var oldState: Char = block.rotationState
+        if (rotation == 'L') block.turnLeft()
+        else if (rotation == 'R') block.turnRight()
+
+        for (i in 0..3) {
+            block.move(offsetsMap.get(oldState)!!.get(i).first - offsetsMap.get(block.rotationState)!!.get(i).first,
+                    offsetsMap.get(oldState)!!.get(i).second - offsetsMap.get(block.rotationState)!!.get(i).second)
+            if (wrongState(block)) {
+                block.move(-(offsetsMap.get(oldState)!!.get(i).first - offsetsMap.get(block.rotationState)!!.get(i).first),
+                        -(offsetsMap.get(oldState)!!.get(i).second - offsetsMap.get(block.rotationState)!!.get(i).second))
+            } else break
+        }
+        if (wrongState(block)) {
+            if (rotation == 'L') block.turnRight() else block.turnLeft()
+        }
+        println(oldState)
+        println(block.rotationState)
+        println(offsetsMap.get(oldState)!!.get(0).first - offsetsMap.get(block.rotationState)!!.get(0).first)
+        println(offsetsMap.get(oldState)!!.get(0).second - offsetsMap.get(block.rotationState)!!.get(0).second)
+    }
+
+    fun wallKickI() {
+
     }
 
     /*fun leftTurnPossible(block: Tetromino): Boolean { // I-BLOCK ROTATION STILL NEEDS UPDATED COORDINATES
@@ -263,7 +307,10 @@ class TetrisControl() {
                 }
             }
             block.turnRight()
-            if (wrongState(block)) block.turnLeft()
+            if (wrongState(block)) {
+                block.turnLeft()
+                wallKickDef(block, 'R')
+            }
             for (i in block.shape.indices) {
                 for (j in 0 until block.shape[i].size) {
                     if (block.shape[i][j] != null) {
