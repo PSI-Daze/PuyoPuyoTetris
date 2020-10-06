@@ -13,18 +13,19 @@ class TetrisControl() {
     lateinit var currentTetromino: Tetromino
 
     // y-offsets have to be reversed from srs system
-    var offsets02: Array<Pair<Int, Int>> = arrayOf(Pair(0, 0), Pair(0, 0), Pair(0, 0), Pair(0, 0))
-    var offsetsL: Array<Pair<Int, Int>> = arrayOf(Pair(-1, 0), Pair(-1, 1), Pair(0, -2), Pair(-1, -2))
-    var offsetsR: Array<Pair<Int, Int>> = arrayOf(Pair(1, 0), Pair(1, 1), Pair(0, -2), Pair(-1, -2))
+    var offsets02: Array<Pair<Int, Int>> = arrayOf(Pair(0, 0), Pair(0, 0), Pair(0, 0), Pair(0, 0), Pair(0, 0))
+    var offsetsL: Array<Pair<Int, Int>> = arrayOf(Pair(0, 0), Pair(-1, 0), Pair(-1, 1), Pair(0, -2), Pair(-1, -2))
+    var offsetsR: Array<Pair<Int, Int>> = arrayOf(Pair(0, 0), Pair(1, 0), Pair(1, 1), Pair(0, -2), Pair(-1, -2))
 
     var offsetsMap: MutableMap<Char, Array<Pair<Int, Int>>> = mutableMapOf('0' to offsets02, 'L' to offsetsL, 'R' to offsetsR, '2' to offsets02)
 
     // I has own offsets (what a troublesome tetromino)
-    var iOffsets02: Array<Pair<Int, Int>> = arrayOf(Pair(0, 0), Pair(0, 0), Pair(0, 0), Pair(0, 0))
-    var iOffsetsL: Array<Pair<Int, Int>> = arrayOf(Pair(-1, 0), Pair(-1, 1), Pair(0, -2), Pair(-1, -2))
-    var iOffsetsR: Array<Pair<Int, Int>> = arrayOf(Pair(1, 0), Pair(1, 1), Pair(0, -2), Pair(-1, -2))
+    var iOffsets0: Array<Pair<Int, Int>> = arrayOf(Pair(0, 0), Pair(-1, 0), Pair(2, 0), Pair(-1, 0), Pair(2, 0))
+    var iOffsetsL: Array<Pair<Int, Int>> = arrayOf(Pair(0, -1), Pair(0, -1), Pair(0, -1), Pair(0, 1), Pair(0, -2))
+    var iOffsetsR: Array<Pair<Int, Int>> = arrayOf(Pair(-1, 0), Pair(0, 0), Pair(0, 0), Pair(0, -1), Pair(0, 2))
+    var iOffsets2: Array<Pair<Int, Int>> = arrayOf(Pair(-1, -1), Pair(1, -1), Pair(-2, -1), Pair(1, 0), Pair(-2, 0))
 
-    var iOffsetsMap: MutableMap<Char, Array<Pair<Int, Int>>> = mutableMapOf('0' to iOffsets02, 'L' to iOffsetsL, 'R' to iOffsetsR, '2' to iOffsets02)
+    var iOffsetsMap: MutableMap<Char, Array<Pair<Int, Int>>> = mutableMapOf('0' to iOffsets0, 'L' to iOffsetsL, 'R' to iOffsetsR, '2' to iOffsets2)
 
 
     var dropTetrominoTimer: Float = 0f
@@ -224,11 +225,7 @@ class TetrisControl() {
                     }
                 }
             }
-            block.turnLeft()
-            if (wrongState(block)) {
-                block.turnRight()
-                wallKickDef(block, 'L')
-            }
+            wallKickDef(block, 'L')
             for (i in block.shape.indices) {
                 for (j in 0 until block.shape[i].size) {
                     if (block.shape[i][j] != null) {
@@ -244,12 +241,16 @@ class TetrisControl() {
         if (rotation == 'L') block.turnLeft()
         else if (rotation == 'R') block.turnRight()
 
-        for (i in 0..3) {
-            block.move(offsetsMap.get(oldState)!!.get(i).first - offsetsMap.get(block.rotationState)!!.get(i).first,
-                    offsetsMap.get(oldState)!!.get(i).second - offsetsMap.get(block.rotationState)!!.get(i).second)
+        var map: MutableMap<Char, Array<Pair<Int, Int>>>
+        if (block.type != 'I') map = offsetsMap
+        else map = iOffsetsMap
+
+        for (i in 0..4) {
+            block.move(map.get(oldState)!!.get(i).first - map.get(block.rotationState)!!.get(i).first,
+                    map.get(oldState)!!.get(i).second - map.get(block.rotationState)!!.get(i).second)
             if (wrongState(block)) {
-                block.move(-(offsetsMap.get(oldState)!!.get(i).first - offsetsMap.get(block.rotationState)!!.get(i).first),
-                        -(offsetsMap.get(oldState)!!.get(i).second - offsetsMap.get(block.rotationState)!!.get(i).second))
+                block.move(-(map.get(oldState)!!.get(i).first - map.get(block.rotationState)!!.get(i).first),
+                        -(map.get(oldState)!!.get(i).second - map.get(block.rotationState)!!.get(i).second))
             } else break
         }
         if (wrongState(block)) {
@@ -257,44 +258,9 @@ class TetrisControl() {
         }
         println(oldState)
         println(block.rotationState)
-        println(offsetsMap.get(oldState)!!.get(0).first - offsetsMap.get(block.rotationState)!!.get(0).first)
-        println(offsetsMap.get(oldState)!!.get(0).second - offsetsMap.get(block.rotationState)!!.get(0).second)
+        println(map.get(oldState)!!.get(0).first - map.get(block.rotationState)!!.get(0).first)
+        println(map.get(oldState)!!.get(0).second - map.get(block.rotationState)!!.get(0).second)
     }
-
-    fun wallKickI() {
-
-    }
-
-    /*fun leftTurnPossible(block: Tetromino): Boolean { // I-BLOCK ROTATION STILL NEEDS UPDATED COORDINATES
-        if (block.type != 'O') {
-            for (i in block.shape.indices) {
-                for (j in 0 until block.shape[i].size) {
-                    if (block.shape[i][j] != null) {
-                        var diffI: Float = i - block.pivotX
-                        var diffJ: Float = j - block.pivotY
-                        var newI = (diffI * 0) + (diffJ * -1)
-                        var newJ = (diffI * 1) + (diffJ * 0)
-                        // matrix formula, just for clarity sake I keep unnecessary steps
-                        var diffX: Int = block.shape[i][j].x - block.x
-                        var diffY: Int = block.shape[i][j].y - block.y
-                        var newX: Int = (diffX * 0) + (diffY * -1)
-                        var newY: Int = (diffX * 1) + (diffY * 0)
-
-                        if ((block.x - newX) < 0 || (block.x - newX) >= columns ||
-                                (block.y - newY) < 0 || (block.y - newY) >= rows) {
-                            return false
-                        } else if (cells[((block.y - newY))]
-                                        [((block.x - newX))] != null &&
-                                cells[((block.y - newY))]
-                                        [((block.x - newX))] != block.shape[(block.pivotX + newI).toInt()][(block.pivotY + newJ).toInt()]) {
-                            return false
-                        }
-                    }
-                }
-            }
-        } else return false
-        return true
-    }*/
 
     fun turnRight(block: Tetromino){ // not compatible with I
         if (block.type != 'O') {
@@ -306,11 +272,7 @@ class TetrisControl() {
                     }
                 }
             }
-            block.turnRight()
-            if (wrongState(block)) {
-                block.turnLeft()
-                wallKickDef(block, 'R')
-            }
+            wallKickDef(block, 'R')
             for (i in block.shape.indices) {
                 for (j in 0 until block.shape[i].size) {
                     if (block.shape[i][j] != null) {
@@ -320,37 +282,6 @@ class TetrisControl() {
             }
         }
     }
-
-    /* fun rightTurnPossible(block: Tetromino): Boolean { // might need to change I-Block rotation
-        if (block.type != 'O') {
-            for (i in block.shape.indices) {
-                for (j in 0 until block.shape[i].size) {
-                    if (block.shape[i][j] != null) {
-                        var diffI: Float = i - block.pivotX
-                        var diffJ: Float = j - block.pivotY
-                        var newI = (diffI * 0) + (diffJ * -1)
-                        var newJ = (diffI * 1) + (diffJ * 0)
-                        // matrix formula, just for clarity sake I keep unnecessary steps
-                        var diffX: Int = block.shape[i][j].x - block.x
-                        var diffY: Int = block.shape[i][j].y - block.y
-                        var newX: Int = (diffX * 0) + (diffY * -1)
-                        var newY: Int = (diffX * 1) + (diffY * 0)
-
-                        if ((block.x + newX) < 0 || (block.x + newX) >= columns ||
-                                (block.y + newY) < 0 || (block.y + newY) >= rows) {
-                            return false
-                        } else if (cells[((block.y + newY))]
-                                        [((block.x + newX))]!= null &&
-                                cells[((block.y + newY))]
-                                        [((block.x + newX))] != block.shape[(block.pivotX - newI).toInt()][(block.pivotY - newJ).toInt()]) {
-                            return false
-                        }
-                    }
-                }
-            }
-        } else return false
-        return true
-    }*/
 
     fun wrongState(block: Tetromino): Boolean {
         for (i in block.shape.indices) {

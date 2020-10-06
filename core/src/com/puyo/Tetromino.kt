@@ -70,17 +70,15 @@ class Tetromino(var column: Int, var row: Int, var type: Char, var texture: Text
                     var newI = (diffI * 0) + (diffJ * -1)
                     var newJ = (diffI * 1) + (diffJ * 0)
 
-                    var fraction: Float = pivotX.roundToInt() - pivotX // is 0.5 if pivot is between blocks, otherwise 0 (for I-spinning)
                     var diffX: Float = shape[i][j].column - column.toFloat()
                     var diffY: Float = shape[i][j].row - row.toFloat()
-                    diffX += fraction
-                    diffY += fraction
+
                     var newX: Float = (diffX * 0) + (diffY * -1)
                     var newY: Float = (diffX * 1) + (diffY * 0)
 
                     newShape[(pivotX - newI).toInt()][(pivotY - newJ).toInt()] = shape[i][j]
                     newShape[(pivotX - newI).toInt()][(pivotY - newJ).toInt()]
-                            .setPosition((column + fraction - newX).toInt(), (row + fraction - newY).toInt())
+                            .setPosition((column - newX).toInt(), (row - newY).toInt())
                     // I really have no idea why I spinning works like this
                 }
             }
@@ -214,8 +212,6 @@ class Tetromino(var column: Int, var row: Int, var type: Char, var texture: Text
         shape[3][3] = TetrisBlock(column, row, texture) // main brick for I-Block (doesn't matter tho)
         shape[4][3] = TetrisBlock(column + 1, row, texture)
         shape[5][3] = TetrisBlock(column + 2, row, texture)
-        pivotX = 3.5f
-        pivotY = 3.5f
     }
 
     fun createJ() {
